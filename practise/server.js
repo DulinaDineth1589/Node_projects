@@ -1,32 +1,20 @@
-require('dotenv').config();
-require('./database');
-const express = require('express');
-const User = require('./userModel');
+const express = require("express");
+const connectDB = require("./config/db");
+const userRoutes = require("./routes/userRoutes");
+require("dotenv").config();
+const cors = require("cors");
 
 const app = express();
-app.use(express.json()); // Middleware to parse JSON requests
 
-// ✅ **GET all users** (http://localhost:3000/users)
-app.get('/users', async (req, res) => {
-    try {
-        const users = await User.find(); // Fetch users from MongoDB
-        res.json(users);
-    } catch (err) {
-        res.status(500).json({ error: 'Error fetching users' });
-    }
-});
+// Connect to MongoDB
+connectDB();
 
-// ✅ **POST a new user** (http://localhost:3000/users)
-app.post('/users', async (req, res) => {
-    try {
-        const newUser = new User(req.body);
-        await newUser.save();
-        res.json({ message: 'User added', user: newUser });
-    } catch (err) {
-        res.status(500).json({ error: 'Error adding user' });
-    }
-});
+// Middleware
+app.use(express.json());
+app.use(cors());
 
-// ✅ Start the server
-const PORT = 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+// Routes
+app.use("/api/users", userRoutes);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
